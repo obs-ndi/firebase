@@ -1,0 +1,8 @@
+
+.DS_Store
+
+firebase-debug.log
+
+functions/package-lock.json
+
+.firebase/
