@@ -6,3 +6,5 @@ firebase-debug.log
 functions/package-lock.json
 
 .firebase/
+
+*.log
