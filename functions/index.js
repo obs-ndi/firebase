@@ -60,3 +60,75 @@ app.get("/update", async (req, res) => {
 });
 
 exports.updateHandler = functions.https.onRequest(app);
+
+exports.downloadsHandler = functions.https.onRequest(
+    async (request, response) => {
+      try {
+        // Endpoint for GitHub API
+        const url = "https://api.github.com/repos/obs-ndi/obs-ndi/releases";
+
+        // Fetch the data from GitHub API
+        const githubResponse = await axios.get(url);
+        const releases = githubResponse.data;
+
+        // Object to hold download counts
+        const downloadCounts = {
+          allVersions: {},
+          latestVersion: {},
+        };
+
+        // Process each release
+        releases.forEach((release, index) => {
+          release.assets.forEach((asset) => {
+            const platform = asset.name.includes("win") ? "windows" :
+            (asset.name.includes("mac") ? "macos" :
+            "linux");
+
+            downloadCounts.allVersions[platform] =
+              (downloadCounts.allVersions[platform] || 0) +
+              asset.download_count;
+            
+            downloadCounts.allVersions["total"] =
+              (downloadCounts.allVersions["total"] || 0) +
+              asset.download_count;
+
+            if (index === 0) {
+              downloadCounts.latestVersion[platform] =
+                (downloadCounts.latestVersion[platform] || 0) +
+                asset.download_count;
+              
+              downloadCounts.latestVersion["total"] = 
+                (downloadCounts.latestVersion["total"] || 0) +
+                asset.download_count;
+            }
+          });
+        });
+
+        const percentages = {
+          allVersions: {},
+          latestVersion: {}
+        };
+    
+        Object.keys(downloadCounts.allVersions).forEach((platform) => {
+          if (platform !== "total") {
+            percentages.allVersions[platform] = 
+              ((downloadCounts.allVersions[platform] / downloadCounts.allVersions["total"]) * 100).toFixed(2) + '%';
+          }
+        });
+    
+        Object.keys(downloadCounts.latestVersion).forEach((platform) => {
+          if (platform !== "total") {
+            percentages.latestVersion[platform] = 
+              ((downloadCounts.latestVersion[platform] / downloadCounts.latestVersion["total"]) * 100).toFixed(2) + '%';
+          }
+        });
+
+        response.json({
+          downloadCounts,
+          percentages
+        });
+      } catch (error) {
+        console.error("Error fetching GitHub releases:", error);
+        response.status(500).send("Failed to fetch GitHub releases");
+      }
+    });

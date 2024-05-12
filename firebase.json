@@ -8,6 +8,10 @@
     ],
     "rewrites": [
       {
+        "source": "/downloads",
+        "function": "downloadsHandler"
+      },
+      {
         "source": "/update",
         "function": "updateHandler"
       }
