@@ -80,9 +80,11 @@ exports.downloadsHandler = functions.https.onRequest(
         // Process each release
         releases.forEach((release, index) => {
           release.assets.forEach((asset) => {
-            const platform = asset.name.includes("win") ? "windows" :
-            (asset.name.includes("mac") ? "macos" :
-            "linux");
+            const platform = asset.name.includes("obs-ndi") ?   
+              (asset.name.includes("win") ? "windows" :
+              (asset.name.includes("mac") ? "macos" :
+              (asset.name.includes(".deb") || asset.name.includes(".ddeb") ? "linux"))):
+              "other";            
 
             downloadCounts.allVersions[platform] =
               (downloadCounts.allVersions[platform] || 0) +
